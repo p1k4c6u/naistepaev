@@ -54,7 +54,7 @@ export default function Home() {
 
     // Add ripple
     const rippleId = Date.now();
-    setRipples(prev => [...prev, { id: rippleId, x: e.clientX, y: e.clientY }]);
+    setRipples(prev => [...prev, { id: rippleId, x: e.clientX - rect.left, y: e.clientY - rect.top }]);
     setTimeout(() => setRipples(prev => prev.filter(r => r.id !== rippleId)), 800);
 
     // Plant as seed
@@ -82,13 +82,16 @@ export default function Home() {
     }, 580);
   }, [flowers]);
 
-  const handleShare = useCallback(() => {
+  const handleShare = useCallback(async () => {
     const flowerList = [...new Set(bouquet)].map(t => `${FLOWER_EMOJI[t]} ${FLOWER_NAME[t]}`).join(', ');
     const text = `🌸 Happy Women's Day! 🌸\n\nI grew a virtual bouquet for you:\n${flowerList}\n\nWith love, on March 8th ✨`;
-    navigator.clipboard?.writeText(text).then(() => {
+    try {
+      await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
-    });
+    } catch {
+      // Clipboard unavailable or permission denied — silent failure
+    }
   }, [bouquet]);
 
   const atMax = flowers.length >= MAX_FLOWERS;
@@ -172,7 +175,7 @@ export default function Home() {
       {showMessage && (
         <div className="message-overlay" onClick={() => setShowMessage(false)}>
           <div className="message-card" onClick={e => e.stopPropagation()}>
-            <p className="message-date">March 8 · 2025</p>
+            <p className="message-date">March 8 · {new Date().getFullYear()}</p>
             <h2 className="message-heading">
               To every woman who lights up the world
             </h2>
